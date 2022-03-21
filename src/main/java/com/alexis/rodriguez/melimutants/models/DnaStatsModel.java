@@ -10,7 +10,6 @@ import javax.persistence.Table;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.alexis.rodriguez.melimutants.localization.MutantConstants;
