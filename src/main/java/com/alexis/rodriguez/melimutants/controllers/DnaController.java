@@ -1,6 +1,8 @@
 package com.alexis.rodriguez.melimutants.controllers;
 
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +21,15 @@ import com.alexis.rodriguez.melimutants.utils.MutantUtils;
 import com.meli.mutants.exceptions.InvalidDNAContentException;
 import com.meli.mutants.exceptions.InvalidDNADimensionException;
 import com.meli.mutants.home.ServiceHome;
+import com.meli.mutants.localization.DNAMessages;
 import com.meli.mutants.utils.DNAUtils;
 import com.meli.mutants.utils.DNAValidations;
 
 @RestController
 @RequestMapping("/api")
 public class DnaController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(DnaController.class);
 	
 	public static final ResponseEntity<String> responseOk = new ResponseEntity<>(MutantConstants.OK, HttpStatus.OK);
 	public static final ResponseEntity<String> responseForbidden = new ResponseEntity<>(MutantConstants.FORBIDDEN, HttpStatus.FORBIDDEN);
@@ -39,7 +44,11 @@ public class DnaController {
 	@GetMapping("/stats")
 	public String getStats(){
 		
+		logger.info("Obteniendo estadisticas de mutantes...");
+		
 		DnaStatsModel response = statsRepository.findById(1);
+		
+		logger.info("Response: /stats - " + response.toString());
 		
 		return response.toString();
 	}
@@ -47,11 +56,14 @@ public class DnaController {
 	@RequestMapping(value = "/mutant", method = RequestMethod.POST,consumes = "text/plain")
 	public ResponseEntity<String> saveDna(@RequestBody String request) {
 		
+		logger.info("Request: /mutant - " + "\n"+ request);
+		
 		boolean isMutantDna = false;
 		
 		String[] requestDna = MutantUtils.extractDnaFromRequest(request);
 		
 		if  (requestDna == null) {
+			logger.error("/mutant - El request recibido por el cliente no presenta un formato valido");
 			return responseBadRequest;
 		}
 		
@@ -60,8 +72,15 @@ public class DnaController {
 		try {
 			DNAValidations.checkDnaFormat(dnaToConsult);
 		} catch (InvalidDNADimensionException e) {
+			
+			logger.error("/mutant - " + e.getMessage());
+			e.printStackTrace();
+			
 			return responseBadRequest;
 		} catch (InvalidDNAContentException e) {
+			
+			logger.error("/mutant - " + e.getMessage());
+			e.printStackTrace();
 			return responseBadRequest;
 		}
 		
@@ -78,12 +97,19 @@ public class DnaController {
 			dnaToPersist.setDna_mutant(MutantConstants.YES);
 			
 			historyRepository.save(dnaToPersist);
+			
+			logger.info("/mutant - " + DNAMessages.DNA_MUTANT_MESSAGE);
+			logger.info("Response: /mutant - " + responseOk);
 			return responseOk;
 		}
 		
 		dnaToPersist.setDna_mutant(MutantConstants.NO);
 		
 		historyRepository.save(dnaToPersist);
+		
+		logger.info("/mutant - " + DNAMessages.DNA_HUMAN_MESSAGE);
+		
+		logger.info("Response: /mutant - " + responseForbidden);
 		
 		return responseForbidden;
 		
