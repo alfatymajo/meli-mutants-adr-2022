@@ -11,7 +11,7 @@
 	<groupId>com.alexis.rodriguez</groupId>
 	<artifactId>meli-mutants</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>meli-mutants</name>
 	<description>Estructura Base Spring Boot Meli-Mutants</description>
 	<properties>
