@@ -58,6 +58,8 @@ public class DnaController {
 		
 		logger.info("Request: /mutant - " + "\n"+ request);
 		
+		DnaStatsModel statsToUpdate = statsRepository.findById(1);
+		
 		boolean isMutantDna = false;
 		
 		String[] requestDna = MutantUtils.extractDnaFromRequest(request);
@@ -98,20 +100,46 @@ public class DnaController {
 			
 			historyRepository.save(dnaToPersist);
 			
+			statsToUpdate.setCount_mutant_dna(statsToUpdate.getCount_mutant_dna() + 1);
+			
+			checkSetRatio(statsToUpdate);
+	
+			statsRepository.save(statsToUpdate);
+			
 			logger.info("/mutant - " + DNAMessages.DNA_MUTANT_MESSAGE);
 			logger.info("Response: /mutant - " + responseOk);
 			return responseOk;
 		}
 		
 		dnaToPersist.setDna_mutant(MutantConstants.NO);
-		
 		historyRepository.save(dnaToPersist);
+		
+		statsToUpdate.setCount_human_dna(statsToUpdate.getCount_human_dna() + 1);
+		
+		checkSetRatio(statsToUpdate);
+		
+		statsRepository.save(statsToUpdate);
 		
 		logger.info("/mutant - " + DNAMessages.DNA_HUMAN_MESSAGE);
 		
 		logger.info("Response: /mutant - " + responseForbidden);
 		
 		return responseForbidden;
+		
+	}
+	
+	private void checkSetRatio(DnaStatsModel stats) {
+		
+
+		if (stats.getCount_mutant_dna() == 0 || stats.getCount_human_dna() == 0) {
+			
+			stats.setRatio(0);
+			
+		}else {
+			
+			stats.setRatio(stats.getCount_mutant_dna() / stats.getCount_human_dna());
+			
+		}
 		
 	}
 
